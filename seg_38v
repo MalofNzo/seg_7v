@@ -1,0 +1,93 @@
+/*
+
+组名：知人知面不知芯
+
+成员名：马远超
+
+创建时间:2018-2-26
+
+模块名：SCAN_SEG
+
+输入：clk,rst_n,data_in
+
+输出：sel,seg
+
+模块功能：8位7段译码器
+
+*/
+
+`timescale 1 ns / 1 ps
+
+module seg_7(input clk,input rst_n,input [31:0]data_in,output reg [2:0]sel,output reg[7:0]seg);
+
+parameter CNT_1K = 15'd24999;
+
+reg [3:0]data_tmp;
+reg [14:0]cnt_1k;
+reg flag_1k;
+
+always @(posedge clk or negedge rst_n)
+if(!rst_n)
+	cnt_1k <= 15'd0;
+else if(cnt_1k == CNT_1K)
+	cnt_1k <= 15'd0;
+else 
+	cnt_1k <= cnt_1k + 1'b1;
+
+always @(posedge clk or negedge rst_n)
+if(!rst_n)
+	flag_1k <= 1'b0;
+else if(cnt_1k == CNT_1K)
+	flag_1k <= 1'b1;
+else
+	flag_1k <= 1'b0;
+
+always @(posedge clk or negedge rst_n)
+if(!rst_n)
+	sel <= 3'd0;
+else if(sel == 3'd7&&flag_1k==1'b1)
+	sel <= 3'd0;
+else if(flag_1k==1'b1)
+	sel <= sel + 1'b1;
+
+always @(posedge clk or negedge rst_n)
+if(!rst_n)
+	data_tmp <= 4'd0;
+else begin
+	case(sel)
+		3'd0:data_tmp <= data_in[31:28];
+		3'd1:data_tmp <= data_in[27:24];
+		3'd2:data_tmp <= data_in[23:20];
+		3'd3:data_tmp <= data_in[19:16];
+		3'd4:data_tmp <= data_in[15:12];
+		3'd5:data_tmp <= data_in[11:8];
+		3'd6:data_tmp <= data_in[7:4];
+		3'd7:data_tmp <= data_in[3:0];
+		default:data_tmp <= 4'd0;
+	endcase
+end
+
+always@(posedge clk or negedge rst_n)
+    if(!rst_n)
+        seg <= 8'b01000000;
+    else begin
+        case(data_tmp)//译码显示值
+            4'h0:seg <= 8'b11000000; //0
+            4'h1:seg <= 8'b11111001; //1
+            4'h2:seg <= 8'b10100100; //2
+            4'h3:seg <= 8'b10110000; //3
+            4'h4:seg <= 8'b10011001; //4
+            4'h5:seg <= 8'b10010010; //5
+            4'h6:seg <= 8'b10000010; //6
+            4'h7:seg <= 8'b11111000; //7
+            4'h8:seg <= 8'b10000000; //8
+            4'h9:seg <= 8'b10010000; //9
+            4'ha:seg <= 8'b10001000; //a
+            4'hb:seg <= 8'b10000011; //b
+            4'hc:seg <= 8'b10000110; //c
+            4'hd:seg <= 8'b10100001; //d
+            4'he:seg <= 8'b10000110; //e
+            4'hf:seg <= 8'b10001110; //f
+        endcase
+    end
+endmodule
